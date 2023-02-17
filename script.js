@@ -72,6 +72,7 @@ const inputElevation = document.querySelector(".form__input--elevation");
 
 class App {
 	#map;
+	#mapZoomLevel = 13;
 	#mapEvent;
 	#workouts = [];
 
@@ -80,6 +81,7 @@ class App {
 		this._getPosition(); //this na current object - zamiast: app._getPosition();
 		form.addEventListener("submit", this._newWorkout.bind(this));
 		inputType.addEventListener("change", this._toggleElevationField);
+		containerWorkouts.addEventListener("click", this._moveToPopup.bind(this));
 	}
 
 	_getPosition() {
@@ -96,7 +98,7 @@ class App {
 
 		const coords = [latitude, longitude];
 		console.log(this);
-		this.#map = L.map("map").setView(coords, 13); //("map") =  <div id="map"></div> id z diva z html-a
+		this.#map = L.map("map").setView(coords, this.#mapZoomLevel); //("map") =  <div id="map"></div> id z diva z html-a
 
 		L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -238,6 +240,21 @@ class App {
 		}
 
 		form.insertAdjacentHTML("afterend", html);
+	}
+
+	_moveToPopup(e) {
+		const workoutEl = e.target.closest(".workout");
+
+		if (!workoutEl) return;
+
+		const workout = this.#workouts.find(work => work.id === workoutEl.dataset.id);
+		//setview w dokumentacji letleaf:
+		this.#map.setView(workout.coords, this.#mapZoomLevel, {
+			animate: true,
+			pan: {
+				duration: 1,
+			},
+		});
 	}
 }
 
