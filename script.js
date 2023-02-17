@@ -83,7 +83,13 @@ class App {
 
 	constructor() {
 		// this.workouts = [];
+		//get user's position
 		this._getPosition(); //this na current object - zamiast: app._getPosition();
+
+		// get data from local storage
+		this._getLocalStorage();
+
+		//attach event handlers
 		form.addEventListener("submit", this._newWorkout.bind(this));
 		inputType.addEventListener("change", this._toggleElevationField);
 		containerWorkouts.addEventListener("click", this._moveToPopup.bind(this));
@@ -102,7 +108,6 @@ class App {
 		console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
 		const coords = [latitude, longitude];
-		console.log(this);
 		this.#map = L.map("map").setView(coords, this.#mapZoomLevel); //("map") =  <div id="map"></div> id z diva z html-a
 
 		L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -111,6 +116,10 @@ class App {
 
 		//handling click on map
 		this.#map.on("click", this._showForm.bind(this));
+
+		this.#workouts.forEach(work => {
+			this._renderWorkoutMarker(work);
+		});
 	}
 
 	_showForm(mapE) {
@@ -171,7 +180,7 @@ class App {
 
 		//add new object to activity array
 		this.#workouts.push(workout);
-		console.log(workout);
+
 		//render workout on map as a marker
 		this._renderWorkoutMarker(workout);
 
@@ -180,6 +189,9 @@ class App {
 
 		//hide form and clear input fields
 		this._hideForm();
+
+		//set local storage to all workouts
+		this._setLocalStorage();
 	}
 
 	_renderWorkoutMarker(workout) {
@@ -262,7 +274,29 @@ class App {
 		});
 
 		//using public interface
-		workout.click();
+		// workout.click();nie jest dziedziczone z localstorage
+	}
+
+	_setLocalStorage() {
+		localStorage.setItem("workouts", JSON.stringify(this.#workouts));
+	}
+
+	_getLocalStorage() {
+		const data = JSON.parse(localStorage.getItem("workouts"));
+		// data.JSON.parseInt(this.#workouts);
+		if (!data) return;
+
+		this.#workouts = data;
+
+		//render on the list
+		this.#workouts.forEach(work => {
+			this._renderWorkout(work);
+		});
+	}
+
+	reset() {
+		localStorage.removeItem("workouts");
+		location.reload();
 	}
 }
 
